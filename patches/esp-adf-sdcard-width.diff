@@ -1,0 +1,12 @@
+diff --git a/components/esp_peripherals/lib/sdcard/sdcard.c b/components/esp_peripherals/lib/sdcard/sdcard.c
+index b144475..842cfa2 100644
+--- a/components/esp_peripherals/lib/sdcard/sdcard.c
++++ b/components/esp_peripherals/lib/sdcard/sdcard.c
+@@ -80,6 +80,6 @@ esp_err_t sdcard_mount(const char *base_path, periph_sdcard_mode_t mode)
+         sdmmc_slot_config_t slot_config = SDMMC_SLOT_CONFIG_DEFAULT();
+         // slot_config.gpio_cd = g_gpio;
+-        slot_config.width = mode & 0X01;
++        slot_config.width = mode == SD_MODE_4_LINE ? 4 : 1;
+         // Enable internal pullups on enabled pins. The internal pullups
+         // are insufficient however, please make sure 10k external pullups are
+         // connected on the bus. This is for debug / example purpose only.

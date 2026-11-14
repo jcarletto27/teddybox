@@ -1,0 +1,69 @@
+menu "TeddyBox"
+
+config TEDDYBOX_OFFICIAL_CLOUD
+    bool "Use the official Tonie cloud with original certificates"
+    default n
+    select MBEDTLS_HAVE_TIME
+    select MBEDTLS_HAVE_TIME_DATE
+
+config TEDDYBOX_CLOUD_HOST
+    string "Cloud hostname"
+    default "prod.de.tbs.toys" if TEDDYBOX_OFFICIAL_CLOUD
+    default "teddycloud.jcarletto.com"
+
+config TEDDYBOX_CLOUD_PORT
+    int "Cloud HTTPS port"
+    range 1 65535
+    default 443 if TEDDYBOX_OFFICIAL_CLOUD
+    default 8243
+
+config TEDDYBOX_CERT_DIRECTORY
+    string "Cloud certificate directory"
+    default "/spiflash/cert"
+    help
+        Contains ca.der, client.der and private.der. DER and PEM are accepted.
+        Official cloud mode requires the original box certificate and key,
+        and its original server CA, rather than replacement TeddyCloud credentials.
+
+choice AUDIO_DECODER_SUPPORT
+    prompt "Audio Decoder"
+    default AUDIO_SUPPORT_OPUS_DECODER
+    help
+        Select audio decoders to be included
+
+config AUDIO_SUPPORT_TS_DECODER
+    bool "ESP-TS-DECODER"
+
+config AUDIO_SUPPORT_M4A_DECODER
+    bool "ESP-M4A-DECODER"
+
+config AUDIO_SUPPORT_MP3_DECODER
+    bool "ESP-MP3-DECODER"
+
+config AUDIO_SUPPORT_MP4_DECODER
+    bool "ESP-MP4-DECODER"
+
+config AUDIO_SUPPORT_AMRNB_DECODER
+    bool "ESP-AMRNB-DECODER"
+
+config AUDIO_SUPPORT_AMRWB_DECODER
+    bool "ESP-AMRWB-DECODER"
+
+config AUDIO_SUPPORT_WAV_DECODER
+    bool "ESP-WAV-DECODER"
+
+config AUDIO_SUPPORT_OPUS_DECODER
+    bool "ESP-OPUS-DECODER"
+
+config AUDIO_SUPPORT_OGG_DECODER
+    bool "ESP-OGG-DECODER"
+
+config AUDIO_SUPPORT_AAC_DECODER
+    bool "ESP-AAC-DECODER"
+
+config AUDIO_SUPPORT_FLAC_DECODER
+    bool "ESP-FLAC-DECODER"
+
+endchoice
+
+endmenu

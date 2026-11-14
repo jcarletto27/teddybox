@@ -1,0 +1,87 @@
+#pragma once
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#ifdef ESP_PLATFORM
+#include "esp_err.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+#endif
+
+#define MAX_HTTP_HEADER_SIZE 1024
+#define HTTP_RECEIVE_SIZE 1600
+
+
+typedef struct
+{
+    esp_err_t (*http_status_cbr)(void *ctx, int status_code);
+    esp_err_t (*http_data_cbr)(void *ctx, uint8_t *data, size_t length);
+    esp_err_t (*content_length_cbr)(void *ctx, size_t content_range, size_t content_length);
+    void *ctx;
+    size_t content_length;
+    size_t received_data_length;
+    uint8_t *header_buffer;
+    size_t header_size;
+    int header_parsed;
+} http_parser_t;
+
+typedef struct
+{
+    const char *host;
+    uint16_t port;
+    const char *path;
+    const char *auth;
+    uint32_t range_start;
+    const bool *abort;
+    esp_err_t (*data_received_cbr)(void *ctx, uint8_t *data, size_t length);
+    void *data_received_ctx;
+    esp_err_t (*connection_closed_cbr)(void *ctx);
+    void *connection_closed_ctx;
+} cloud_req_t;
+
+typedef enum
+{
+    CC_STATE_INIT,
+    CC_STATE_CONNECTING,
+    CC_STATE_CONNECTED,
+    CC_STATE_RECEIVING,
+    CC_STATE_ABORTED,
+    CC_STATE_FINISHED,
+    CC_STATE_ERROR
+} cloud_content_state_t;
+
+typedef enum
+{
+    CBR_CLOSE_OK = 0x1000
+} cloud_cbr_err_t;
+
+typedef struct cloud_content_req
+{
+    unsigned references; /* playback and cloud worker each hold one reference */
+    /* input fields filled by requester */
+    uint64_t nfc_uid;
+    bool abort;
+
+    /* working variables for the download handler */
+    char *location;
+    char *filename;
+    char *auth;
+    SemaphoreHandle_t update_sem;
+    SemaphoreHandle_t file_sem;
+
+    cloud_content_state_t state;
+    uint32_t status_code;
+    uint32_t content_length;
+    uint32_t received;
+    FILE *handle;
+} cloud_content_req_t;
+
+void cloud_init(void);
+esp_err_t cloud_set_time(void);
+cloud_content_req_t *cloud_content_download(uint64_t nfc_uid, const uint8_t *nfc_token);
+cloud_content_state_t cloud_content_get_state(cloud_content_req_t *req);
+void cloud_content_cleanup(cloud_content_req_t *req);
+
+uint32_t cloud_content_received(cloud_content_req_t *req);
+
+bool cloud_is_busy(void);
